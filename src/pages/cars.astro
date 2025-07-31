@@ -2,9 +2,11 @@
 import { supabase } from "@lib/supabase";
 import Layout from "@layouts/Layout.astro";
 
-const { data: vehicles, error } = await supabase.from("vehicles").select("*");
+const { data: vehicles, error } = await supabase
+  .from("vehicles")
+  .select("*")
+  .limit(20);
 // .select("slug, brand, model, body, description, engine")
-// .limit(20);
 
 if (error) {
   throw new Error(error.message);
