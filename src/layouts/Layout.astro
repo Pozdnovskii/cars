@@ -1,0 +1,32 @@
+---
+import "../styles/global.css";
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | Lux Watches</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={`Lux Watches | ${title}`} />
+    <meta property="og:description" content={description} />
+    <!-- <meta property="og:image" content="/opengraph.jpg" /> -->
+    <meta property="og:type" content="website" />
+    <!-- <meta property="og:url" content={canonicalURL} /> -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`Lux Watches | ${title}`} />
+    <meta name="twitter:description" content={description} />
+    <!-- <meta name="twitter:image" content="/opengraph.jpg" /> -->
+    <!-- <link rel="canonical" href={canonicalURL} /> -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="view-transition" content="same-origin" />
+  </head>
+
+  <body>
+    <slot />
+  </body>
+</html>

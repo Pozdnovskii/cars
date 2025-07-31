@@ -1,0 +1,28 @@
+---
+import { Image } from "astro:assets";
+
+import { getCollection } from "astro:content";
+const howItWorksList = await getCollection("howItWorks");
+---
+
+<ol class="grid md:relative md:grid-cols-2 md:gap-x-svw gap-y-svw">
+  {
+    howItWorksList.map((item) => (
+      <li class=" md:grid md:grid-cols-subgrid md:col-span-2  md:auto-rows-min">
+        <div class=" text-white p-svw rounded-(--spacing-svw-sm) bg-linear-65 from-teal-950 to-teal-700 md:col-[2/3]">
+          <span class="text-3xl font-semibold">Step {item.id}</span>
+          <h3>{item.data.title}</h3>
+          <p>{item.data.text}</p>
+        </div>
+
+        <div class="hidden md:absolute md:inset-0 md:col-[1/2] md:block">
+          <Image
+            src={item.data.image}
+            alt={`Photo of ${item.data.title}`}
+            class="sticky top-[6em] aspect-square"
+          />
+        </div>
+      </li>
+    ))
+  }
+</ol>

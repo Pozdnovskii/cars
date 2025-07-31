@@ -1,0 +1,39 @@
+---
+import { supabase } from "@lib/supabase";
+import Layout from "@layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const { data: vehicles, error } = await supabase
+    .from("vehicles")
+    .select("slug");
+
+  if (error) throw new Error(error.message);
+
+  return (
+    vehicles?.map((car) => ({
+      params: { slug: car.slug },
+    })) || []
+  );
+}
+
+const { params } = Astro;
+const { data: car, error } = await supabase
+  .from("vehicles")
+  .select("*")
+  .eq("slug", params.slug)
+  .single();
+
+if (error || !car) {
+  throw new Error("Car not found");
+}
+---
+
+<Layout title={car.title} description="Details about the car">
+  <main>
+    <h1>{car.brand} {car.model}</h1>
+
+    <p><strong>Body:</strong> {car.body}</p>
+    <p><strong>Engine:</strong> {car.engine}</p>
+    <p>{car.description}</p>
+  </main>
+</Layout>

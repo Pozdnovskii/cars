@@ -1,0 +1,46 @@
+<!-- ---
+import Layout from "@layouts/Layout.astro";
+
+const res = await fetch(
+  "https://cars-database-with-image.p.rapidapi.com/api/brands",
+  {
+    method: "GET",
+    headers: {
+      "x-rapidapi-host": "cars-database-with-image.p.rapidapi.com",
+      "x-rapidapi-key": "9f4924fc9dmsh250203b08442269p141835jsn725cf446fe9a",
+    },
+  }
+);
+
+if (!res.ok) {
+  throw new Error("Ошибка при запросе к RapidAPI: " + res.status);
+}
+
+const data = await res.json();
+
+type Vehicle = {
+  id: string;
+  name: string;
+  image: string;
+};
+
+const vehicles: Vehicle[] = data.brands || [];
+---
+
+<Layout title="cars" description="Description about Lux Watches">
+  <main>
+    <h1>Brands</h1>
+    <ul>
+      {
+        vehicles.map((vehicle) => (
+          <li>
+            <p>{vehicle.id} </p>
+            <p>{vehicle.name} </p>
+
+            <img src={vehicle.image} alt="" />
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</Layout> -->
