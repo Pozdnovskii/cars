@@ -2,38 +2,151 @@
 import { supabase } from "@lib/supabase";
 import Layout from "@layouts/Layout.astro";
 
-const { data: vehicles, error } = await supabase
+const { data: vehicles } = await supabase
   .from("vehicles")
-  .select("*")
+  .select("id, brand, model, body, engine")
   .limit(20);
-// .select("slug, brand, model, body, description, engine")
-
-if (error) {
-  throw new Error(error.message);
-}
 ---
 
-<Layout title="cars" description="Description about Lux Watches">
+<Layout>
+  <h1>Автомобили</h1>
+
+  <!-- 🔍 Форма фильтрации -->
+  <form id="filter-form">
+    <select name="brand">
+      <option value="">Все бренды</option>
+      <option value="Toyota">Toyota</option>
+      <option value="BMW">BMW</option>
+    </select>
+
+    <select name="engine">
+      <option value="">Все двигатели</option>
+      <option value="gas">Gas</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+
+    <button type="submit">Фильтровать</button>
+  </form>
+
+  <!-- 📦 Контейнер для карточек -->
+  <div id="car-list">
+    {
+      vehicles?.map((car) => (
+        <div class="car-card">
+          <h2>
+            {car.brand} {car.model}
+          </h2>
+          <p>
+            {car.body} — {car.engine}
+          </p>
+        </div>
+      ))
+    }
+  </div>
+
+  <script>
+    import { actions } from "astro:actions";
+
+    document
+      .getElementById("filter-form")
+      ?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target as HTMLFormElement);
+        const brand = (formData.get("brand") as string) || "";
+        const engine = (formData.get("engine") as string) || "";
+
+        try {
+          const { data: cars } = await actions.filterCars({ brand, engine });
+
+          // Обновляем список
+          const carList = document.getElementById("car-list");
+          if (carList && cars) {
+            carList.innerHTML = cars
+              .map(
+                (car) => `
+            <div class="car-card">
+              <h2>${car.brand} ${car.model}</h2>
+              <p>${car.body} — ${car.engine}</p>
+            </div>
+          `
+              )
+              .join("");
+          }
+        } catch (error) {
+          console.error("Ошибка:", error);
+        }
+      });
+  </script>
+</Layout>
+
+<!-- <Layout title="Cars" description="Browse our cars">
   <main>
     <h1>Cars</h1>
-    <ul>
+
+    <form id="filter-form">
+      <label>
+        Brand:
+        <input type="text" name="brand" placeholder="e.g. Toyota" />
+      </label>
+      <label>
+        Body:
+        <input type="text" name="body" placeholder="e.g. SUV" />
+      </label>
+      <button type="submit">Filter</button>
+    </form>
+
+    <ul id="cars-list">
       {
         vehicles.map((car) => (
           <li>
-            <h2>
+            <strong>
               {car.brand} {car.model}
-            </h2>
-            <p>
-              <strong>Body:</strong> {car.body}
-            </p>
-            <p>
-              <strong>Engine:</strong> {car.engine}
-            </p>
-            <p>{car.description}</p>
-            <a href={`/cars/${car.slug}`}>Ыууууууу</a>
+            </strong>{" "}
+            — {car.body}
           </li>
         ))
       }
     </ul>
   </main>
-</Layout>
+
+  <script type="module">
+    import { createClient } from "@supabase/supabase-js";
+
+    const supabase = createClient(
+      import.meta.env.PUBLIC_SUPABASE_URL,
+      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const form = document.getElementById("filter-form");
+    const list = document.getElementById("cars-list");
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const brand = formData.get("brand")?.trim();
+      const body = formData.get("body")?.trim();
+
+      let query = supabase
+        .from("vehicles")
+        .select("id, brand, model, body")
+        .limit(50);
+      if (brand) query = query.ilike("brand", `%${brand}%`);
+      if (body) query = query.ilike("body", `%${body}%`);
+
+      const { data: filteredCars, error } = await query;
+
+      if (error) {
+        alert("Error loading cars: " + error.message);
+        return;
+      }
+
+      list.innerHTML = filteredCars
+        .map(
+          (car) =>
+            `<li><strong>${car.brand} ${car.model}</strong> — ${car.body}</li>`
+        )
+        .join("");
+    });
+  </script>
+</Layout> -->
