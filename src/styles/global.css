@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+@layer components {
+  #car-list {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1em;
+  }
+
+  #car-list li {
+    @apply border px-3 py-2 flex flex-col;
+  }
+
+  #car-list img {
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .wrapper {
+    @apply mx-auto px-svw w-full 2xl:container;
+  }
+}

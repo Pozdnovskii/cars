@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "./header.css";
+
+@font-face {
+  font-family: "Geist";
+  src: url("/src/assets/fonts/Geist-VariableFont_wght.woff2")
+    format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* --font-headings: "Geist", sans-serif; */
+  /* --color-primary: var(--color-stone-950);
+  --color-secondary: var(--color-stone-50);
+  --color-light: var(--color-zinc-800);
+  --color-grey: var(--color-zinc-200);
+  --color-accent: var(--color-lime-200); */
+
+  --color-bg: var(--color-slate-50);
+
+  --spacing-svw: min(3svw, 48px);
+  --spacing-svw-dbl: calc(var(--spacing-svw) * 2);
+  --spacing-svw-sm: calc(var(--spacing-svw) / 2);
+
+  --spacing-section: max(90px, calc(var(--spacing-svw) * 4));
+  --spacing-section-md: calc(var(--spacing-section) / 2);
+  --spacing-section-sm: calc(var(--spacing-section) / 3);
+
+  /* --text-responsive: clamp(1rem, 0.9342rem + 0.3289svw, 1.25rem); */
+  /* --spacing-section: clamp(90px, 12svw, 180px); */
+  /* --spacing-section-xs: calc(var(--spacing-section) / 3); */
+  /* --text-em-sm: 0.875em; */
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    scrollbar-gutter: stable both-edges;
+    font-family: "Geist", sans-serif;
+    font-weight: 300;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 1rem + 3svw, 3.6rem);
+    line-height: 1;
+    margin-bottom: min(0.66em, 30px);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 1rem + 2.5svw, 3rem);
+    line-height: 1.15;
+    /* margin-bottom: min(0.66em, 30px); */
+  }
+
+  h3,
+  .h3 {
+    font-size: clamp(1.25rem, 1rem + 1.8svw, 2.5rem);
+    /* margin-bottom: min(0.66em, 18px); */
+  }
+
+  /* h4 {
+    font-size: clamp(1.125rem, 0.61rem + 0.8svw, 1.5rem);
+    margin-bottom: min(0.3em, 10px);
+  } */
+}
+
+@layer components {
+  #main {
+    @apply flex flex-col gap-y-section;
+  }
+
+  body:has(#header-btn[aria-expanded="true"]) {
+    overflow: hidden;
+  }
+
+  .wrapper {
+    @apply mx-auto px-svw w-full 2xl:container;
+  }
+
+  /* .ret {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  } */
+
+  /* #hero {
+    min-height: 100dvh;
+    @apply flex flex-col;
+  } */
+}
