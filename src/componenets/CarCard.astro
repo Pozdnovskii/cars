@@ -23,5 +23,8 @@ const { car } = Astro.props;
     {car.body} — {car.engine}
   </p>
   <a href={`/cars/${car.slug}`}>More</a>
-  <img src={car.image_src} transition:name={`img_${car.model}`} />
+  <img
+    src={car.image_src || "/images/car-placeholder.png"}
+    transition:name={`img_${car.model}`}
+  />
 </li>

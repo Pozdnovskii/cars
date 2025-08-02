@@ -10,8 +10,8 @@ export const server = {
       body: z.string().optional(),
       slug: z.string().optional(),
       image_src: z.string().optional(),
-      offset: z.number().default(0), // новый параметр
-      limit: z.number().default(15), // новый параметр
+      offset: z.number().default(0),
+      limit: z.number().default(11),
     }),
     handler: async ({
       brand = "",
@@ -26,7 +26,7 @@ export const server = {
           count: "exact",
         })
         .not("image_src", "is", null)
-        .range(offset, offset + limit - 1); // пагинация в Supabase
+        .range(offset, offset + limit - 1);
 
       if (brand) query = query.eq("brand", brand);
       if (engine) query = query.eq("engine", engine);

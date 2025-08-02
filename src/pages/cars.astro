@@ -4,12 +4,11 @@ import Layout from "@layouts/Layout.astro";
 
 import CarCard from "src/componenets/CarCard.astro";
 
-// Начальные данные (первые 15)
 const { data: vehicles, count } = await supabase
   .from("vehicles")
   .select("id, brand, model, body, engine, slug, image_src", { count: "exact" })
   .not("image_src", "is", null)
-  .range(0, 10); // первые 15 (0-14)
+  .range(0, 10);
 
 const { data: brands } = await supabase
   .from("brands")
@@ -52,23 +51,23 @@ const { data: engines } = await supabase
           {engines?.map(({ name }) => <option value={name}>{name}</option>)}
         </select>
 
-        <button type="submit">Фильтровать</button>
+        <button type="submit">Filter</button>
       </form>
 
       <ul class="grid" id="car-list">
         {vehicles?.map((car) => <CarCard car={car} />)}
       </ul>
 
-      <div class="text-center mt-8">
+      <div class="flex flex-col items-center text-center mt-8">
         <button
           id="load-more"
           class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           style={vehicles && vehicles.length >= 11 ? "" : "display: none;"}
         >
-          Показать еще
+          Show more
         </button>
         <p id="total-info" class="text-gray-600 mt-2">
-          Показано {vehicles?.length || 0} из {count || 0} автомобилей
+          Shown {vehicles?.length || 0} out of {count || 0} cars
         </p>
       </div>
     </section>
@@ -81,7 +80,6 @@ const { data: engines } = await supabase
     let currentFilters = { brand: "", engine: "", body: "" };
     let isLoading = false;
 
-    // Фильтрация (сбрасывает offset)
     document
       .getElementById("filter-form")
       ?.addEventListener("submit", async (e) => {
@@ -95,17 +93,16 @@ const { data: engines } = await supabase
           body: (formData.get("body") as string) || "",
         };
 
-        currentOffset = 0; // сброс при новом поиске
-        await loadCars(true); // replace = true
+        currentOffset = 0;
+        await loadCars(true);
       });
 
-    // Загрузка еще
     document
       .getElementById("load-more")
       ?.addEventListener("click", async () => {
         if (isLoading) return;
         currentOffset += 11;
-        await loadCars(false); // replace = false (добавляем)
+        await loadCars(false);
       });
 
     async function loadCars(replace = false) {
@@ -113,7 +110,7 @@ const { data: engines } = await supabase
       const loadMoreButton = document.getElementById(
         "load-more"
       ) as HTMLButtonElement;
-      if (loadMoreButton) loadMoreButton.textContent = "Загружается...";
+      if (loadMoreButton) loadMoreButton.textContent = "Loading...";
 
       try {
         const { data } = await actions.filterCars({
@@ -136,7 +133,7 @@ const { data: engines } = await supabase
                   </h2>
                   <p>${car.body} — ${car.engine}</p>
                   <a href="/cars/${car.slug}">More</a>
-                  <img src="${car.image_src || ""}" data-transition-name="img_${car.model}" />
+                  <img src="${car.image_src || "/images/car-placeholder.png"}" data-transition-name="img_${car.model}" />
                 </li>
               `
             )
@@ -152,7 +149,7 @@ const { data: engines } = await supabase
             ? data.cars.length
             : carList.children.length;
           if (totalInfo) {
-            totalInfo.textContent = `Показано ${totalShown} из ${data.total} автомобилей`;
+            totalInfo.textContent = `Shown ${totalShown} out of ${data.total} cars`;
           }
 
           if (loadMoreButton) {
