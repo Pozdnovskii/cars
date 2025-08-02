@@ -29,11 +29,16 @@ if (error || !car) {
 ---
 
 <Layout title={car.title} description="Details about the car">
-  <main>
-    <h1>{car.brand} {car.model}</h1>
-
-    <p><strong>Body:</strong> {car.body}</p>
-    <p><strong>Engine:</strong> {car.engine}</p>
-    <p>{car.description}</p>
+  <main class="wrapper px-7 py-20">
+    <h1 class="text-3xl mb-[1em]" transition:name={`title_${car.model}`}>
+      {car.brand}
+      {car.model}
+    </h1>
+    <img src={car.image_src} transition:name={`img_${car.model}`} />
+    <section>
+      <p><strong>Body:</strong> {car.body}</p>
+      <p><strong>Engine:</strong> {car.engine}</p>
+      <p>{car.description}</p>
+    </section>
   </main>
 </Layout>

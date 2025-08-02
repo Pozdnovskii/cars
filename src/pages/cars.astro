@@ -2,16 +2,28 @@
 import { supabase } from "@lib/supabase";
 import Layout from "@layouts/Layout.astro";
 
-const { data: vehicles } = await supabase
+import CarCard from "src/componenets/CarCard.astro";
+
+// Начальные данные (первые 15)
+const { data: vehicles, count } = await supabase
   .from("vehicles")
-  // .select("*")
-  .select("id, brand, model, body, engine, image_src")
+  .select("id, brand, model, body, engine, slug, image_src", { count: "exact" })
   .not("image_src", "is", null)
-  .limit(20);
+  .range(0, 10); // первые 15 (0-14)
 
 const { data: brands } = await supabase
   .from("brands")
-  .select("id, name")
+  .select("name")
+  .order("name", { ascending: true });
+
+const { data: bodies } = await supabase
+  .from("bodies")
+  .select("name")
+  .order("name", { ascending: true });
+
+const { data: engines } = await supabase
+  .from("engines")
+  .select("name")
   .order("name", { ascending: true });
 ---
 
@@ -20,7 +32,7 @@ const { data: brands } = await supabase
     <h1 class="text-3xl mb-[1em]">All cars</h1>
 
     <section>
-      <form id="filter-form">
+      <form id="filter-form" class="mb-6">
         <select name="brand">
           <option value="">All brands</option>
           {
@@ -28,69 +40,131 @@ const { data: brands } = await supabase
               <option value={brand.name}>{brand.name}</option>
             ))
           }
-          <!-- <option value="Toyota">Toyota</option>
-          <option value="BMW">BMW</option> -->
+        </select>
+
+        <select name="body">
+          <option value="">All body types</option>
+          {bodies?.map(({ name }) => <option value={name}>{name}</option>)}
         </select>
 
         <select name="engine">
-          <option value="">Все двигатели</option>
-          <option value="gas">Gas</option>
-          <option value="hybrid">Hybrid</option>
+          <option value="">All engines</option>
+          {engines?.map(({ name }) => <option value={name}>{name}</option>)}
         </select>
 
         <button type="submit">Фильтровать</button>
       </form>
 
       <ul class="grid" id="car-list">
-        {
-          vehicles?.map((car) => (
-            <li class="car-card">
-              <h2>
-                {car.brand} {car.model}
-              </h2>
-              <p>
-                {car.body} — {car.engine}
-              </p>
-              <img src={car.image_src} />
-            </li>
-          ))
-        }
+        {vehicles?.map((car) => <CarCard car={car} />)}
       </ul>
+
+      <div class="text-center mt-8">
+        <button
+          id="load-more"
+          class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          style={vehicles && vehicles.length >= 11 ? "" : "display: none;"}
+        >
+          Показать еще
+        </button>
+        <p id="total-info" class="text-gray-600 mt-2">
+          Показано {vehicles?.length || 0} из {count || 0} автомобилей
+        </p>
+      </div>
     </section>
   </main>
 
   <script>
     import { actions } from "astro:actions";
 
+    let currentOffset = 0;
+    let currentFilters = { brand: "", engine: "", body: "" };
+    let isLoading = false;
+
+    // Фильтрация (сбрасывает offset)
     document
       .getElementById("filter-form")
       ?.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (isLoading) return;
 
         const formData = new FormData(e.target as HTMLFormElement);
-        const brand = (formData.get("brand") as string) || "";
-        const engine = (formData.get("engine") as string) || "";
+        currentFilters = {
+          brand: (formData.get("brand") as string) || "",
+          engine: (formData.get("engine") as string) || "",
+          body: (formData.get("body") as string) || "",
+        };
 
-        try {
-          const { data: cars } = await actions.filterCars({ brand, engine });
-
-          // Обновляем список
-          const carList = document.getElementById("car-list");
-          if (carList && cars) {
-            carList.innerHTML = cars
-              .map(
-                (car) => `
-            <li class="car-card">
-              <h2>${car.brand} ${car.model}</h2>
-              <p>${car.body} — ${car.engine}</p>
-            </li>
-          `
-              )
-              .join("");
-          }
-        } catch (error) {
-          console.error("Ошибка:", error);
-        }
+        currentOffset = 0; // сброс при новом поиске
+        await loadCars(true); // replace = true
       });
+
+    // Загрузка еще
+    document
+      .getElementById("load-more")
+      ?.addEventListener("click", async () => {
+        if (isLoading) return;
+        currentOffset += 11;
+        await loadCars(false); // replace = false (добавляем)
+      });
+
+    async function loadCars(replace = false) {
+      isLoading = true;
+      const loadMoreButton = document.getElementById(
+        "load-more"
+      ) as HTMLButtonElement;
+      if (loadMoreButton) loadMoreButton.textContent = "Загружается...";
+
+      try {
+        const { data } = await actions.filterCars({
+          ...currentFilters,
+          offset: currentOffset,
+          limit: 11,
+        });
+
+        const carList = document.getElementById("car-list");
+        const totalInfo = document.getElementById("total-info");
+
+        if (carList && data) {
+          console.log(data);
+          const newCarsHTML = data.cars
+            .map(
+              (car) => `
+                <li class="car-card">
+                  <h2 data-transition-name="title_${car.model}">
+                    ${car.brand} ${car.model}
+                  </h2>
+                  <p>${car.body} — ${car.engine}</p>
+                  <a href="/cars/${car.slug}">More</a>
+                  <img src="${car.image_src || ""}" data-transition-name="img_${car.model}" />
+                </li>
+              `
+            )
+            .join("");
+
+          if (replace) {
+            carList.innerHTML = newCarsHTML;
+          } else {
+            carList.innerHTML += newCarsHTML;
+          }
+
+          const totalShown = replace
+            ? data.cars.length
+            : carList.children.length;
+          if (totalInfo) {
+            totalInfo.textContent = `Показано ${totalShown} из ${data.total} автомобилей`;
+          }
+
+          if (loadMoreButton) {
+            loadMoreButton.style.display = data.hasMore ? "block" : "none";
+            loadMoreButton.textContent = "Show more";
+          }
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        isLoading = false;
+      }
+    }
   </script>
 </Layout>
